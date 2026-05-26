@@ -75,8 +75,6 @@ for team in teams:
     trough_tele = (teleopTroughCount[team] * 2)
     endgame_score = endGame[team]
     
-    if team == "frc1477":
-        print((algae_tele * 1.3), endgame_score)
     compiled_score.append({
         "Team": team,
         "Algae 1st Score": auto_score + (algae_tele * 1.2) + (branch_tele * 0.7) + endgame_score + trough_tele,
