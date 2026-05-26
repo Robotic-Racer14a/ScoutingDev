@@ -277,8 +277,8 @@ scrollbar.pack(side="right", fill="y")
 
 def refresh_table():
     tree.delete(*tree.get_children())
-    for (team, match), (abr, atr, dcbr, dctr, net) in scouting_data.items():
-        tree.insert("", "end", values=(team, match, abr, atr, dcbr, dctr, net))
+    for (team, match), (abr, atr) in scouting_data.items():
+        tree.insert("", "end", values=(team, match, abr, atr))
 
 # ── Delete selected row ───────────────────────────────────────────────────────
 def delete_selected(event=None):
