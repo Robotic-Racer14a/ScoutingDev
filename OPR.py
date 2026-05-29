@@ -1,5 +1,14 @@
 import frcOPRMethods as opr
 
+def combine_match_and_pit(match_data, pit_data):
+    new_scout_data = {}
+    for key, values in match_data.items():
+        new_scout_data[key] = values
+        
+    for key, values in pit_data.items():
+        new_scout_data[key] = values
+    return new_scout_data
+
 # --- Example Usage ---
 
 opr.event_key = "YEARkey"
@@ -10,8 +19,9 @@ alliance_scores = opr.get_event_matches_alliance_scores(["data",])
 team_objectives = opr.get_event_matches_team_objectives(["objective",])
 teams = opr.get_event_teams()
 
-scouted = opr.get_data() # Data in form ("frc####", "qm##"): (autoBranchCount, autoTroughCount, teleopBranchCount, teleopTroughCount, netAlgaeCount)
-#For pit scouting, use this example ("frc2337", 0): (3, 0, 17, 1, 0)
+match_scouted = opr.get_match_data()
+pit_scouted = opr.get_pit_data()
+scouted = combine_match_and_pit(match_scouted, pit_scouted)
 
 data_scores = opr.calculate_opr_weighted_per_match(alliance_scores["data"], teams, {key: value[0] for key, value in scouted.items()}, scouting_trust)
 

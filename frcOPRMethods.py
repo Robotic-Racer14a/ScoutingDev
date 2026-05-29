@@ -12,15 +12,15 @@ headers = {
 event_key = ""
 include_elims = False
 
-def clear_data():
+def clear_matchdata():
     with shelve.open("scouting") as db:
         db[event_key] = {}
         
-def clear_all():
+def clear_match_all():
     with shelve.open("scouting") as db:
         db.clear()
 
-def add_data(data):
+def add_match_data(data):
     with shelve.open("scouting") as db:
         try:
             previous_data = db[event_key]
@@ -31,13 +31,39 @@ def add_data(data):
             previous_data[key] = value
         db[event_key] = previous_data
     
-def get_data():
+def get_match_data():
     with shelve.open("scouting") as db:
         try:
             return db[event_key]
         except KeyError:
             return {}
+     
+def clear_pit_data():
+    with shelve.open("pit_scouting") as db:
+        db[event_key] = {}
         
+def clear_pit_all():
+    with shelve.open("pit_scouting") as db:
+        db.clear()
+
+def add_pit_data(data):
+    with shelve.open("pit_scouting") as db:
+        try:
+            previous_data = db[event_key]
+        except KeyError:
+            previous_data = {}
+            
+        for key, value in data.items():
+            previous_data[key] = value
+        db[event_key] = previous_data
+    
+def get_pit_data():
+    with shelve.open("pit_scouting") as db:
+        try:
+            return db[event_key]
+        except KeyError:
+            return {}
+      
 def print_match_options():
     url = f"{BASE_URL}/event/{event_key}/matches"
     response = requests.get(url, headers=headers)
