@@ -133,7 +133,7 @@ def estimate_pit_data(lev_1, lev_2, lev_3, lev_4, net, pit_data):
 
 # --- Example Usage ---
 
-opr.event_key = "2025mil"
+opr.event_key = "2025micmp2"
 scouting_trust = 5 # How much to trust our data vs calculated OPR
 
 # opr.print_match_options()

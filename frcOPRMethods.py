@@ -203,13 +203,6 @@ def calculate_opr_weighted_per_match(matches, teams, scouted_scores = {}, scout_
             continue
 
         if match_i not in valid_match_keys:
-            # Pit scout: non-zero values still act as a soft prior
-            if observed_score != 0:
-                row = [0] * n
-                row[team_index[team]] = 1
-                A.append(row)
-                b.append(observed_score * 1)
-            # Zero is already handled above via pit_zero_teams
             continue
 
         # In-match scouting
