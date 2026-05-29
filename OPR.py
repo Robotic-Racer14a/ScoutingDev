@@ -1,28 +1,46 @@
 import frcOPRMethods as opr
 
 def get_branch_scores(matches):
-    new_match_list = []
+    new_match_list = {}
+    lev_1_list = []
+    lev_2_list = []
+    lev_3_list = []
+    lev_4_list = []
     for match in matches:
-        new_match_list.append({
-            "red_teams": match["red_teams"],
-            "red_score": match["red_score"]["tba_botRowCount"] + match["red_score"]["tba_midRowCount"] + match["red_score"]["tba_topRowCount"],
-            "blue_teams": match["blue_teams"],
-            "blue_score": match["blue_score"]["tba_botRowCount"] + match["blue_score"]["tba_midRowCount"] + match["blue_score"]["tba_topRowCount"],
-            "match_key": match["match_key"]
-            })
-    return new_match_list
-
-def get_trough_scores(matches):
-    new_match_list = []
-    for match in matches:
-        new_match_list.append({
+        lev_1_list.append({
             "red_teams": match["red_teams"],
             "red_score": match["red_score"]["trough"],
             "blue_teams": match["blue_teams"],
             "blue_score": match["blue_score"]["trough"],
             "match_key": match["match_key"]
             })
-    return new_match_list
+        lev_2_list.append({
+            "red_teams": match["red_teams"],
+            "red_score": match["red_score"]["tba_botRowCount"],
+            "blue_teams": match["blue_teams"],
+            "blue_score": match["blue_score"]["tba_botRowCount"],
+            "match_key": match["match_key"]
+            })
+        lev_3_list.append({
+            "red_teams": match["red_teams"],
+            "red_score": match["red_score"]["tba_midRowCount"],
+            "blue_teams": match["blue_teams"],
+            "blue_score":match["blue_score"]["tba_midRowCount"],
+            "match_key": match["match_key"]
+            })
+        lev_4_list.append({
+            "red_teams": match["red_teams"],
+            "red_score": match["red_score"]["tba_topRowCount"],
+            "blue_teams": match["blue_teams"],
+            "blue_score": match["blue_score"]["tba_topRowCount"],
+            "match_key": match["match_key"]
+            })
+    return {
+            "Level 1": lev_1_list,
+            "Level 2": lev_2_list,
+            "Level 3": lev_3_list,
+            "Level 4": lev_4_list,
+            }
 
 
 def combine_match_and_pit(match_data, pit_data):
@@ -34,24 +52,72 @@ def combine_match_and_pit(match_data, pit_data):
         new_scout_data[key] = values
     return new_scout_data
 
+def estimate_pit_data(lev_1, lev_2, lev_3, lev_4, net, pit_data):
+    new_list = {}
+    for team, lev_1_score in lev_1.items():
+        if (team, "PIT") in pit_data:
+            new_list[(team, "PIT")] = pit_data[(team, "PIT")]
+            continue
+        
+        lev_2_score = lev_2[team]
+        lev_3_score = lev_3[team]
+        lev_4_score = lev_4[team]
+        net_score = net[team]
+        output = []
+        
+        if lev_1_score < 0.5:
+            output.append("No")
+        else:
+            output.append("Yes")
+        
+        if lev_2_score < 0.5:
+            output.append("No")
+        else:
+            output.append("Yes")
+
+        if lev_3_score < 0.5:
+            output.append("No")
+        else:
+            output.append("Yes")
+
+        if lev_4_score < 0.5:
+            output.append("No")
+        else:
+            output.append("Yes")
+
+        if net_score < 0.5:
+            output.append("No")
+        else:
+            output.append("Yes")
+            
+        new_list[(team, "PIT")] = output
+        
+    return new_list
+
 # --- Example Usage ---
 
 opr.event_key = "2025mil"
 scouting_trust = 5 # How much to trust our data vs calculated OPR
 
-# opr.print_match_options()
+opr.print_match_options()
 alliance_scores = opr.get_event_matches_alliance_scores(["netAlgaeCount", "autoReef", "teleopReef"])
 team_objectives = opr.get_event_matches_team_objectives(["autoLine", "endGame"])
 teams = opr.get_event_teams()
 
 match_scouted = opr.get_match_data()
-pit_scouted = opr.get_pit_data()
+pit_scouted = estimate_pit_data(
+    opr.calculate_opr_weighted_per_match(get_branch_scores(alliance_scores["teleopReef"])["Level 1"], teams),
+    opr.calculate_opr_weighted_per_match(get_branch_scores(alliance_scores["teleopReef"])["Level 2"], teams),
+    opr.calculate_opr_weighted_per_match(get_branch_scores(alliance_scores["teleopReef"])["Level 3"], teams),
+    opr.calculate_opr_weighted_per_match(get_branch_scores(alliance_scores["teleopReef"])["Level 4"], teams),
+    opr.calculate_opr_weighted_per_match(alliance_scores["netAlgaeCount"], teams),
+    opr.get_pit_data()
+    )
 scouted = combine_match_and_pit(match_scouted, pit_scouted)
 
-autoCoralCount = opr.calculate_opr_weighted_per_match(get_branch_scores(alliance_scores["autoReef"]), teams, {key: value[0] for key, value in scouted.items()}, scouting_trust)
-autoTroughCount = opr.calculate_opr_weighted_per_match(get_branch_scores(alliance_scores["autoReef"]), teams, {key: value[1] for key, value in scouted.items()}, scouting_trust)
-teleopCoralCount = opr.calculate_opr_weighted_per_match(get_trough_scores(alliance_scores["teleopReef"]), teams, {key: value[2] for key, value in scouted.items()}, scouting_trust)
-teleopTroughCount = opr.calculate_opr_weighted_per_match(get_trough_scores(alliance_scores["teleopReef"]), teams, {key: value[3] for key, value in scouted.items()}, scouting_trust)
+
+
+
 netAlgaeCount = opr.calculate_opr_weighted_per_match(alliance_scores["netAlgaeCount"], teams, {key: value[4] for key, value in scouted.items()}, scouting_trust)
 
 autoLine = opr.calculate_team_average(team_objectives["autoLine"], teams, {"Yes": 3, "No": 0})
