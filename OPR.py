@@ -133,8 +133,10 @@ def estimate_pit_data(lev_1, lev_2, lev_3, lev_4, net, pit_data):
 
 # --- Example Usage ---
 
-opr.event_key = "2025micmp2"
+opr.event_key = "2025mil"
 scouting_trust = 5 # How much to trust our data vs calculated OPR
+captain = "frc2337"
+pick_one = "frc4122"
 
 # opr.print_match_options()
 alliance_scores = opr.get_event_matches_alliance_scores(["netAlgaeCount", "autoReef", "teleopReef"])
@@ -166,6 +168,18 @@ autoLine = opr.calculate_team_average(team_objectives["autoLine"], teams, {"Yes"
 endGame = opr.calculate_team_average(team_objectives["endGame"], teams, {"DeepCage": 12, "ShallowCage": 6, "Parked": 2, "None": 0})
 
 compiled_score = []
+captain_a_coral = [a_lev_1_scores[captain], a_lev_2_scores[captain], a_lev_3_scores[captain], a_lev_4_scores[captain]]
+pick_one_a_coral = [a_lev_1_scores[pick_one], a_lev_2_scores[pick_one], a_lev_3_scores[pick_one], a_lev_4_scores[pick_one]]
+
+captain_dc_coral = [dc_lev_1_scores[captain], dc_lev_2_scores[captain], dc_lev_3_scores[captain], dc_lev_4_scores[captain]]
+pick_one_dc_coral = [dc_lev_1_scores[pick_one], dc_lev_2_scores[pick_one], dc_lev_3_scores[pick_one], dc_lev_4_scores[pick_one]]
+
+captain_net = (netAlgaeCount[captain])
+pick_one_net = (netAlgaeCount[pick_one])
+
+captain_objective = autoLine[captain] + endGame[captain]
+pick_one_objective = autoLine[pick_one] + endGame[pick_one]
+
 for team in teams:
     
     a_coral_score = (a_lev_1_scores[team] * 3) + (a_lev_2_scores[team] * 4) + (a_lev_3_scores[team] * 5) + (a_lev_4_scores[team] * 6)
@@ -174,9 +188,37 @@ for team in teams:
     
     objective = autoLine[team] + endGame[team]
     
+    
+    alliance_score = 0
+    
+    pick_two_a_coral = [a_lev_1_scores[team], a_lev_2_scores[team], a_lev_3_scores[team], a_lev_4_scores[team]]
+    pick_two_dc_coral = [dc_lev_1_scores[team], dc_lev_2_scores[team], dc_lev_3_scores[team], dc_lev_4_scores[team]]
+    pick_two_net = (netAlgaeCount[team])
+    
+    reef = [0, 0, 0, 0]
+    overflow = 0
+    for j in range(4):
+        i = 3 - j
+        reef[i] += captain_a_coral[i] + pick_one_a_coral[i] + pick_two_a_coral[i]
+        alliance_score += (reef[i] * 1)
+        
+        reef[i] += captain_dc_coral[i] + pick_one_dc_coral[i] + pick_two_dc_coral[i] + overflow if i > 0 else 0
+        if reef[i] > 12:
+            overflow = reef[i] - 12
+            reef[i] = 12
+        alliance_score += (reef[i] * (2 + i))
+        
+        reef[i] = round(float(reef[i]), 1)
+        pick_two_dc_coral[i] = round(float(pick_two_dc_coral[i]), 1)
+        
+    alliance_score += (captain_net + pick_one_net + pick_two_net) * 4
+    alliance_score += objective
+    
     compiled_score.append({
         "Team": team,
+        "Pick Two Score": alliance_score,
+        "Net Count": pick_two_net,
         "Total Score": a_coral_score + dc_coral_score + net_score + objective
     })
 
-opr.print_results(compiled_score, "Total Score", 50, 1, True)
+opr.print_results(compiled_score, "Pick Two Score", 70, 1, True)
