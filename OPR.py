@@ -44,6 +44,7 @@ def get_branch_scores(matches):
 
 
 def combine_match_and_pit(match_data, pit_data):
+    
     new_scout_data = {}
     for key, values in match_data.items():
         new_scout_data[key] = values
@@ -99,7 +100,7 @@ def estimate_pit_data(lev_1, lev_2, lev_3, lev_4, net, pit_data):
 opr.event_key = "2025mil"
 scouting_trust = 5 # How much to trust our data vs calculated OPR
 
-opr.print_match_options()
+# opr.print_match_options()
 alliance_scores = opr.get_event_matches_alliance_scores(["netAlgaeCount", "autoReef", "teleopReef"])
 team_objectives = opr.get_event_matches_team_objectives(["autoLine", "endGame"])
 teams = opr.get_event_teams()

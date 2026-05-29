@@ -226,16 +226,12 @@ for col, label, color in [(0, "AUTO", ACCENT), (2, "DRIVER CONTROLLED", SUCCESS)
 
 # Score inputs
 v_auto_branch  = tk.IntVar(value=0)
-v_auto_trough  = tk.IntVar(value=0)
 v_dc_branch    = tk.IntVar(value=0)
-v_dc_trough    = tk.IntVar(value=0)
 v_dc_net    = tk.IntVar(value=0)
 
 fields = [
     ("Branch",  v_auto_branch,  4, 0),
-    ("Trough",   v_auto_trough,  5, 0),
     ("Branch",  v_dc_branch,    4, 2),
-    ("Trough",   v_dc_trough,    5, 2),
     ("Net",   v_dc_net,    6, 2),
 ]
 
@@ -261,13 +257,13 @@ def add_entry():
         return
     match = v_match.get()
     key   = (f"frc{team}", match)
-    val   = (v_auto_branch.get(), v_auto_trough.get(), v_dc_branch.get(), v_dc_trough.get(), v_dc_net.get())
+    val   = (v_auto_branch.get(), v_dc_branch.get(), v_dc_net.get())
     scouting_data[key] = val
     refresh_table()
     update_counter()
     status_var.set(f"✓  Added entry for Team {team}, Match {match}")
     # Reset scores and team
-    for v in (v_auto_branch, v_auto_trough, v_dc_branch, v_dc_trough, v_dc_net):
+    for v in (v_auto_branch, v_dc_branch, v_dc_net):
         v.set(0)
     v_team.set(0)
     v_match.set(match + 1)
@@ -334,7 +330,7 @@ tbl_header.pack(fill="x", padx=24, pady=(8, 2))
 tk.Label(tbl_header, text="RECORDED ENTRIES", font=FONT_LABEL,
          bg=BG, fg=ACCENT2).pack(side="left")
 
-cols = ("Team", "Match", " Auto Branch ", " Auto Trough ", " DC Branch ", " DC Trough ", "Net")
+cols = ("Team", "Match", " Auto Branch ", " DC Branch ", "Net")
 
 style = ttk.Style()
 style.theme_use("clam")
