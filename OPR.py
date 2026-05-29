@@ -47,10 +47,46 @@ def combine_match_and_pit(match_data, pit_data):
     
     new_scout_data = {}
     for key, values in match_data.items():
-        new_scout_data[key] = values
+        can_lev_1 = pit_data[(key[0], "PIT")][0]
+        can_lev_2 = pit_data[(key[0], "PIT")][1]
+        can_lev_3 = pit_data[(key[0], "PIT")][2]
+        can_lev_4 = pit_data[(key[0], "PIT")][3]
+        can_net = pit_data[(key[0], "PIT")][4]
+        
+        total_levels = 0
+        if can_lev_1: 
+            total_levels += 1
+            highest = 1
+        if can_lev_2: 
+            total_levels += 1
+            highest = 2
+        if can_lev_3: 
+            total_levels += 1
+            highest = 3
+        if can_lev_4: 
+            total_levels += 1
+            highest = 4
+        
+        a_split_score = values[0] // total_levels
+        a_runover_score = values[0] % total_levels
+        
+        a_lev_1 = 0 if not(can_lev_1) else a_split_score + a_runover_score if highest == 1 else 0
+        a_lev_2 = 0 if not(can_lev_2) else a_split_score + a_runover_score if highest == 2 else 0
+        a_lev_3 = 0 if not(can_lev_3) else a_split_score + a_runover_score if highest == 3 else 0
+        a_lev_4 = 0 if not(can_lev_4) else a_split_score + a_runover_score if highest == 4 else 0
+        
+        dc_split_score = values[1] // total_levels
+        dc_runover_score = values[1] % total_levels
+        
+        dc_lev_1 = 0 if not(can_lev_1) else dc_split_score + dc_runover_score if highest == 1 else 0
+        dc_lev_2 = 0 if not(can_lev_2) else dc_split_score + dc_runover_score if highest == 2 else 0
+        dc_lev_3 = 0 if not(can_lev_3) else dc_split_score + dc_runover_score if highest == 3 else 0
+        dc_lev_4 = 0 if not(can_lev_4) else dc_split_score + dc_runover_score if highest == 4 else 0
+        
+        new_scout_data[key] = (a_lev_1, a_lev_2, a_lev_3, a_lev_4, dc_lev_1, dc_lev_2, dc_lev_3, dc_lev_4, values[2])
         
     for key, values in pit_data.items():
-        new_scout_data[key] = values
+        new_scout_data[key] = (values[0], values[1], values[2], values[3], values[0], values[1], values[2], values[3], values[4])
     return new_scout_data
 
 def estimate_pit_data(lev_1, lev_2, lev_3, lev_4, net, pit_data):
@@ -67,29 +103,29 @@ def estimate_pit_data(lev_1, lev_2, lev_3, lev_4, net, pit_data):
         output = []
         
         if lev_1_score < 0.5:
-            output.append("No")
+            output.append(False)
         else:
-            output.append("Yes")
+            output.append(True)
         
         if lev_2_score < 0.5:
-            output.append("No")
+            output.append(False)
         else:
-            output.append("Yes")
+            output.append(True)
 
         if lev_3_score < 0.5:
-            output.append("No")
+            output.append(False)
         else:
-            output.append("Yes")
+            output.append(True)
 
         if lev_4_score < 0.5:
-            output.append("No")
+            output.append(False)
         else:
-            output.append("Yes")
+            output.append(True)
 
         if net_score < 0.5:
-            output.append("No")
+            output.append(False)
         else:
-            output.append("Yes")
+            output.append(True)
             
         new_list[(team, "PIT")] = output
         
@@ -116,49 +152,31 @@ pit_scouted = estimate_pit_data(
     )
 scouted = combine_match_and_pit(match_scouted, pit_scouted)
 
-
-
-
-netAlgaeCount = opr.calculate_opr_weighted_per_match(alliance_scores["netAlgaeCount"], teams, {key: value[4] for key, value in scouted.items()}, scouting_trust)
+a_lev_1_scores = opr.calculate_opr_weighted_per_match(get_branch_scores(alliance_scores["autoReef"])["Level 1"], teams, {key: value[0] for key, value in scouted.items()}, scouting_trust)
+a_lev_2_scores = opr.calculate_opr_weighted_per_match(get_branch_scores(alliance_scores["autoReef"])["Level 2"], teams, {key: value[1] for key, value in scouted.items()}, scouting_trust)
+a_lev_3_scores = opr.calculate_opr_weighted_per_match(get_branch_scores(alliance_scores["autoReef"])["Level 3"], teams, {key: value[2] for key, value in scouted.items()}, scouting_trust)
+a_lev_4_scores = opr.calculate_opr_weighted_per_match(get_branch_scores(alliance_scores["autoReef"])["Level 4"], teams, {key: value[3] for key, value in scouted.items()}, scouting_trust)
+dc_lev_1_scores = opr.calculate_opr_weighted_per_match(get_branch_scores(alliance_scores["teleopReef"])["Level 1"], teams, {key: value[4] for key, value in scouted.items()}, scouting_trust)
+dc_lev_2_scores = opr.calculate_opr_weighted_per_match(get_branch_scores(alliance_scores["teleopReef"])["Level 2"], teams, {key: value[5] for key, value in scouted.items()}, scouting_trust)
+dc_lev_3_scores = opr.calculate_opr_weighted_per_match(get_branch_scores(alliance_scores["teleopReef"])["Level 3"], teams, {key: value[6] for key, value in scouted.items()}, scouting_trust)
+dc_lev_4_scores = opr.calculate_opr_weighted_per_match(get_branch_scores(alliance_scores["teleopReef"])["Level 4"], teams, {key: value[7] for key, value in scouted.items()}, scouting_trust)
+netAlgaeCount = opr.calculate_opr_weighted_per_match(alliance_scores["netAlgaeCount"], teams, {key: value[8] for key, value in scouted.items()}, scouting_trust)
 
 autoLine = opr.calculate_team_average(team_objectives["autoLine"], teams, {"Yes": 3, "No": 0})
 endGame = opr.calculate_team_average(team_objectives["endGame"], teams, {"DeepCage": 12, "ShallowCage": 6, "Parked": 2, "None": 0})
 
-
 compiled_score = []
 for team in teams:
     
-    auto_trough_score = (autoTroughCount[team] * 3)
-    auto_branch_score = (autoCoralCount[team] * 6)
+    a_coral_score = (a_lev_1_scores[team] * 3) + (a_lev_2_scores[team] * 4) + (a_lev_3_scores[team] * 5) + (a_lev_4_scores[team] * 6)
+    dc_coral_score = (dc_lev_1_scores[team] * 2) + (dc_lev_2_scores[team] * 3) + (dc_lev_3_scores[team] * 4) + (dc_lev_4_scores[team] * 5)
+    net_score = (netAlgaeCount[team] * 4)
     
-    if auto_trough_score > auto_branch_score:
-        auto_score = auto_trough_score + autoLine[team]
-        center_auto_check = autoLine[team]
-        if auto_trough_score > 3:
-            center_auto_check += 3
-        else:
-            center_auto_check += auto_trough_score
-    else:
-        auto_score = auto_branch_score + autoLine[team]
-        center_auto_check = autoLine[team]
-        if auto_branch_score > 6:
-            center_auto_check += 6
-        else:
-            center_auto_check += auto_branch_score
-            
-    branch_tele = (teleopCoralCount[team] * 5)
-    algae_tele = (netAlgaeCount[team] * 4)
-    trough_tele = (teleopTroughCount[team] * 2)
-    endgame_score = endGame[team]
+    objective = autoLine[team] + endGame[team]
     
     compiled_score.append({
         "Team": team,
-        "Algae 1st Score": auto_score + (algae_tele * 1.2) + (branch_tele * 0.7) + endgame_score + trough_tele,
-        "Branch 1st Score": auto_score + (branch_tele * 1.2) + (algae_tele * 0.7) + endgame_score + trough_tele,
-        "Algae 2nd Score": center_auto_check + (algae_tele * 1.3) + (branch_tele * 0.6) + endgame_score + trough_tele,
-        "Branch 2nd Score": center_auto_check + (branch_tele * 1.3) + (algae_tele * 0.6) + endgame_score + trough_tele,
-        "Rounded 2nd Score": center_auto_check + branch_tele + algae_tele + endgame_score + trough_tele,
-        "Total Score": auto_score + algae_tele + branch_tele + endgame_score + trough_tele
+        "Total Score": a_coral_score + dc_coral_score + net_score + objective
     })
 
-opr.print_results(compiled_score, "Algae 2nd Score", 50, 1, True)
+opr.print_results(compiled_score, "Total Score", 50, 1, True)
