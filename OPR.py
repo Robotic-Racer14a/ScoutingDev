@@ -133,10 +133,10 @@ def estimate_pit_data(lev_1, lev_2, lev_3, lev_4, net, pit_data):
 
 # --- Example Usage ---
 
-opr.event_key = "2025mil"
+opr.event_key = "2025micmp2"
 scouting_trust = 5 # How much to trust our data vs calculated OPR
-captain = "frc2337"
-pick_one = "frc4122"
+captain = "frc2767"
+pick_one = "frc67"
 
 # opr.print_match_options()
 alliance_scores = opr.get_event_matches_alliance_scores(["netAlgaeCount", "autoReef", "teleopReef"])
@@ -208,8 +208,6 @@ for team in teams:
             reef[i] = 12
         alliance_score += (reef[i] * (2 + i))
         
-        reef[i] = round(float(reef[i]), 1)
-        pick_two_dc_coral[i] = round(float(pick_two_dc_coral[i]), 1)
         
     alliance_score += (captain_net + pick_one_net + pick_two_net) * 4
     alliance_score += objective
