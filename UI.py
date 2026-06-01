@@ -227,12 +227,10 @@ for col, label, color in [(0, "AUTO", ACCENT), (2, "DRIVER CONTROLLED", SUCCESS)
 # Score inputs
 v_auto_branch  = tk.IntVar(value=0)
 v_dc_branch    = tk.IntVar(value=0)
-v_dc_net    = tk.IntVar(value=0)
 
 fields = [
-    ("Branch",  v_auto_branch,  4, 0),
-    ("Branch",  v_dc_branch,    4, 2),
-    ("Net",   v_dc_net,    6, 2),
+    ("Grid",  v_auto_branch,  4, 0),
+    ("Grid",  v_dc_branch,    4, 2),
 ]
 
 for lbl, var, row, col in fields:
@@ -257,13 +255,13 @@ def add_entry():
         return
     match = v_match.get()
     key   = (f"frc{team}", match)
-    val   = (v_auto_branch.get(), v_dc_branch.get(), v_dc_net.get())
+    val   = (v_auto_branch.get(), v_dc_branch.get())
     scouting_data[key] = val
     refresh_table()
     update_counter()
     status_var.set(f"✓  Added entry for Team {team}, Match {match}")
     # Reset scores and team
-    for v in (v_auto_branch, v_dc_branch, v_dc_net):
+    for v in (v_auto_branch, v_dc_branch):
         v.set(0)
     v_team.set(0)
     v_match.set(match + 1)
@@ -330,7 +328,7 @@ tbl_header.pack(fill="x", padx=24, pady=(8, 2))
 tk.Label(tbl_header, text="RECORDED ENTRIES", font=FONT_LABEL,
          bg=BG, fg=ACCENT2).pack(side="left")
 
-cols = ("Team", "Match", " Auto Branch ", " DC Branch ", "Net")
+cols = ("Team", "Match", " Auto Grid ", " DC Grid ")
 
 style = ttk.Style()
 style.theme_use("clam")
@@ -363,8 +361,8 @@ scrollbar.pack(side="right", fill="y")
 
 def refresh_table():
     tree.delete(*tree.get_children())
-    for (team, match), (abr, atr, dcbr, dctr, net) in scouting_data.items():
-        tree.insert("", "end", values=(team, match, abr, atr, dcbr, dctr, net))
+    for (team, match), (abr, atr) in scouting_data.items():
+        tree.insert("", "end", values=(team, match, abr, atr))
 
 # ── Delete selected row ───────────────────────────────────────────────────────
 def delete_selected(event=None):
@@ -390,5 +388,5 @@ root.mainloop()
 # ── After window closes — print the dict ─────────────────────────────────────
 print("\n=== Scouting Data ===")
 print(scouting_data)
-opr.event_key = f"2025{v_event.get()}"
+opr.event_key = f"2023{v_event.get()}"
 opr.add_match_data(scouting_data)
