@@ -213,24 +213,13 @@ make_entry(form_frame, v_event).grid(row=1, column=3, sticky="w",
 tk.Frame(form_frame, bg=BORDER, height=1).grid(
     row=2, column=0, columnspan=4, sticky="ew", padx=16, pady=6)
 
-# Section labels row
-for col, label, color in [(0, "AUTO", ACCENT), (2, "DRIVER CONTROLLED", SUCCESS)]:
-    tk.Label(form_frame, text=label, font=FONT_LABEL, bg=PANEL, fg=color
-             ).grid(row=3, column=col, columnspan=2, sticky="w",
-                    padx=(16 if col == 0 else 0, 0), pady=2)
 
 
 task_one_frame, v_task_one = make_toggle_group(
-    form_frame, "Task 1", ["High", "Low", "None"],
+    form_frame, "Highest Placement", ["High", "Mid", "Low", "None"],
     accent_color="#dddddd"
 )
 task_one_frame.grid(row=7, column=0, columnspan=4, sticky="w", padx=16, pady=(4, 12))
-
-task_two_frame, v_task_two = make_toggle_group(
-    form_frame, "Task 2", ["High", "Low", "None"],
-    accent_color="#dddddd"
-)
-task_two_frame.grid(row=7, column=3, columnspan=4, sticky="w", padx=16, pady=(4, 12))
 
 # ── Buttons ───────────────────────────────────────────────────────────────────
 def update_counter():
@@ -247,7 +236,7 @@ def add_entry():
         return
     match = v_match.get()
     key   = (f"frc{team}", "PIT")
-    val   = (v_task_one.get(), v_task_two.get())
+    val   = (v_task_one.get())
     scouting_data[key] = val
     refresh_table()
     update_counter()
@@ -318,7 +307,7 @@ tbl_header.pack(fill="x", padx=24, pady=(8, 2))
 tk.Label(tbl_header, text="RECORDED ENTRIES", font=FONT_LABEL,
          bg=BG, fg=ACCENT2).pack(side="left")
 
-cols = ("Team", "Task One", "Task Two")
+cols = ("Team", "Task One")
 
 style = ttk.Style()
 style.theme_use("clam")
@@ -351,8 +340,8 @@ scrollbar.pack(side="right", fill="y")
 
 def refresh_table():
     tree.delete(*tree.get_children())
-    for (team, match), (abr, atr) in scouting_data.items():
-        tree.insert("", "end", values=(team, abr, atr))
+    for (team, match), (abr) in scouting_data.items():
+        tree.insert("", "end", values=(team, abr))
 
 # ── Delete selected row ───────────────────────────────────────────────────────
 def delete_selected(event=None):
@@ -378,5 +367,5 @@ root.mainloop()
 # ── After window closes — print the dict ─────────────────────────────────────
 print("\n=== Scouting Data ===")
 print(scouting_data)
-opr.event_key = f"YEAR{v_event.get()}"
+opr.event_key = f"2023{v_event.get()}"
 opr.add_pit_data(scouting_data)
