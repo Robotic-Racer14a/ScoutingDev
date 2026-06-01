@@ -66,10 +66,11 @@ def combine_match_and_pit(match_data, pit_data):
         dc_lev_2 = 0 if not(can_lev_2) else dc_split_score + dc_runover_score if highest == 2 else 0
         dc_lev_3 = 0 if not(can_lev_3) else dc_split_score + dc_runover_score if highest == 3 else 0
         
-        new_scout_data[key] = (a_lev_1, a_lev_2, a_lev_3, dc_lev_1, dc_lev_2, dc_lev_3)
+        new_scout_data[key] = (a_lev_1, a_lev_2, a_lev_3, dc_lev_1, dc_lev_2, dc_lev_3, highest)
         
     for key, values in pit_data.items():
-        new_scout_data[key] = (values[0], values[1], values[2], values[0], values[1], values[2])
+        highest = 3 if values[2] else 2 if values[1] else 1
+        new_scout_data[key] = (values[0], values[1], values[2], values[0], values[1], values[2], highest)
     return new_scout_data
 
 def estimate_pit_data(lev_1, lev_2, lev_3, pit_data):
@@ -122,6 +123,7 @@ pit_scouted = estimate_pit_data(
     opr.get_pit_data()
     )
 scouted = combine_match_and_pit(match_scouted, pit_scouted)
+team_highest = {key[0]: value[6] for key, value in scouted.items()}
 
 a_lev_1_scores = opr.calculate_opr_weighted_per_match(get_grid_scores(alliance_scores["autoCommunity"])["Level 1"], teams, {key: value[0] for key, value in scouted.items()}, scouting_trust)
 a_lev_2_scores = opr.calculate_opr_weighted_per_match(get_grid_scores(alliance_scores["autoCommunity"])["Level 2"], teams, {key: value[1] for key, value in scouted.items()}, scouting_trust)
@@ -135,13 +137,75 @@ autoBalance = opr.calculate_team_average(team_objectives["autoChargeStation"], t
 endGame = opr.calculate_team_average(team_objectives["endGameChargeStation"], teams, {"Docked": 10, "Park": 3, "None": 0})
 
 compiled_score = []
+captain_a_grid = [a_lev_1_scores[captain], a_lev_2_scores[captain], a_lev_3_scores[captain]]
+captain_dc_scores = dc_lev_1_scores[captain] + dc_lev_2_scores[captain] + dc_lev_3_scores[captain]
+captain_highest = team_highest[captain]
+
+if (not pick_one == ""):
+    captain_a_grid += [a_lev_1_scores[pick_one], a_lev_2_scores[pick_one], a_lev_3_scores[pick_one]]
+    captain_dc_scores += dc_lev_1_scores[pick_one] + dc_lev_2_scores[pick_one] + dc_lev_3_scores[pick_one]
+    captain_highest += team_highest[pick_one]
 for team in teams:
     
+    # Figure Out Pick One
+    
+    team_a_grid = [a_lev_1_scores[team], a_lev_2_scores[team], a_lev_3_scores[team]]
+    team_dc_scores = dc_lev_1_scores[team] + dc_lev_2_scores[team] + dc_lev_3_scores[team]
+    team_highest_score = team_highest[team]
+    
+    captain_temp = captain_dc_scores
+    alliance_combined = captain_temp + team_dc_scores
+    
+    compiled_grid = [0, 0, 0]
+    pick_score = 0
+    for i in range(3):
+        #Flip to loop top to bottom
+        j = 2 - i
+        
+        compiled_grid[j] = team_a_grid[j] + captain_a_grid[j]
+        pick_score += compiled_grid[j]
+        
+        spots_left = 9 - compiled_grid[j]
+        
+        if (captain_highest >= (j + 1) and team_highest_score >= (j + 1)):
+            if (alliance_combined > spots_left):
+                compiled_grid[j] = 9
+                alliance_combined -= spots_left
+            else:
+                compiled_grid[j] += alliance_combined
+                alliance_combined = 0
+        elif (captain_highest >= (j + 1) and not team_highest_score >= (j + 1)):
+            if (captain_temp > spots_left):
+                compiled_grid[j] = 9
+                alliance_combined -= spots_left
+                captain_temp -= spots_left
+            else:
+                compiled_grid[j] += captain_temp
+                alliance_combined -= captain_temp
+                captain_temp = 0
+        elif (not captain_highest >= (j + 1) and team_highest_score >= (j + 1)):
+            if (team_dc_scores > spots_left):
+                compiled_grid[j] = 9
+                alliance_combined -= spots_left
+                team_dc_scores -= spots_left
+            else:
+                compiled_grid[j] += team_dc_scores
+                alliance_combined -= team_dc_scores
+                team_dc_scores = 0
+                
+        compiled_grid[j] = round(compiled_grid[j])
+        pick_score += (compiled_grid[j] * (3 + j)) + ((compiled_grid[j] // 3) * 5)
+    
+    compiled_grid.append(round(alliance_combined))
+    pick_score += alliance_combined
+        
+    print(f"{team} - {compiled_grid}")
+    
+    # Figure Out Pick Two
     
     compiled_score.append({
         "Team": team,
-        "Pick Two Score": full_alliance_score,
-        "Pick One Score": pick_one_score
+        "Pick Score": pick_score
     })
 
-opr.print_results(compiled_score, "Pick One Score", 70, 1, True)
+opr.print_results(compiled_score, "Pick Score", 70, 1, True)
