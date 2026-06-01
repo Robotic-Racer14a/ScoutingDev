@@ -105,7 +105,7 @@ def estimate_pit_data(lev_1, lev_2, lev_3, pit_data):
 
 # --- Example Usage ---
 
-opr.event_key = "2023micmp3"
+opr.event_key = "2023mitr2"
 scouting_trust = 5 # How much to trust our data vs calculated OPR
 captain = "frc2337"
 pick_one = ""
@@ -137,14 +137,18 @@ autoBalance = opr.calculate_team_average(team_objectives["autoChargeStation"], t
 endGame = opr.calculate_team_average(team_objectives["endGameChargeStation"], teams, {"Docked": 10, "Park": 3, "None": 0})
 
 compiled_score = []
-captain_a_grid = [a_lev_1_scores[captain], a_lev_2_scores[captain], a_lev_3_scores[captain]]
-captain_dc_scores = dc_lev_1_scores[captain] + dc_lev_2_scores[captain] + dc_lev_3_scores[captain]
-captain_highest = team_highest[captain]
+if (not captain == ""):
+    captain_a_grid = [a_lev_1_scores[captain], a_lev_2_scores[captain], a_lev_3_scores[captain]]
+    captain_dc_scores = dc_lev_1_scores[captain] + dc_lev_2_scores[captain] + dc_lev_3_scores[captain]
+    captain_highest = team_highest[captain]
+else:
+    captain_a_grid = [0, 0, 0]
+    captain_dc_scores = 0
+    captain_highest = 0
 
 if (not pick_one == ""):
     captain_a_grid += [a_lev_1_scores[pick_one], a_lev_2_scores[pick_one], a_lev_3_scores[pick_one]]
     captain_dc_scores += dc_lev_1_scores[pick_one] + dc_lev_2_scores[pick_one] + dc_lev_3_scores[pick_one]
-    captain_highest += team_highest[pick_one]
 for team in teams:
     
     # Figure Out Pick One
@@ -197,7 +201,7 @@ for team in teams:
         pick_score += (compiled_grid[j] * (3 + j)) + ((compiled_grid[j] // 3) * 5)
     
     compiled_grid.append(round(alliance_combined))
-    pick_score += alliance_combined
+    pick_score += (alliance_combined * 3)
         
     print(f"{team} - {compiled_grid}")
     
