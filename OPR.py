@@ -107,7 +107,7 @@ def estimate_pit_data(lev_1, lev_2, lev_3, pit_data):
 opr.event_key = "2023micmp3"
 scouting_trust = 5 # How much to trust our data vs calculated OPR
 captain = "frc2337"
-pick_one = "frc33"
+pick_one = ""
 
 # opr.print_match_options()
 alliance_scores = opr.get_event_matches_alliance_scores(["autoCommunity", "teleopCommunity"])
@@ -132,51 +132,16 @@ dc_lev_3_scores = opr.calculate_opr_weighted_per_match(get_grid_scores(alliance_
 
 autoLine = opr.calculate_team_average(team_objectives["mobility"], teams, {"Yes": 3, "No": 0})
 autoBalance = opr.calculate_team_average(team_objectives["autoChargeStation"], teams, {"Docked": 12, "None": 0})
-endGame = opr.calculate_team_average(team_objectives["endGameChargeStation"], teams, {"Docked": 10, "None": 0})
+endGame = opr.calculate_team_average(team_objectives["endGameChargeStation"], teams, {"Docked": 10, "Park": 3, "None": 0})
 
 compiled_score = []
-captain_a_coral = [a_lev_1_scores[captain], a_lev_2_scores[captain], a_lev_3_scores[captain]]
-pick_one_a_coral = [a_lev_1_scores[pick_one], a_lev_2_scores[pick_one], a_lev_3_scores[pick_one]]
-
-captain_dc_coral = [dc_lev_1_scores[captain], dc_lev_2_scores[captain], dc_lev_3_scores[captain]]
-pick_one_dc_coral = [dc_lev_1_scores[pick_one], dc_lev_2_scores[pick_one], dc_lev_3_scores[pick_one]]
-
-captain_objective = autoLine[captain] + endGame[captain]
-pick_one_objective = autoLine[pick_one] + endGame[pick_one]
-
 for team in teams:
     
-    a_coral_score = (a_lev_1_scores[team] * 3) + (a_lev_2_scores[team] * 4) + (a_lev_3_scores[team] * 5)
-    dc_coral_score = (dc_lev_1_scores[team] * 2) + (dc_lev_2_scores[team] * 3) + (dc_lev_3_scores[team] * 4)
-    
-    objective = autoLine[team] + endGame[team]
-    
-    
-    alliance_score = 0
-    
-    pick_two_a_coral = [a_lev_1_scores[team], a_lev_2_scores[team], a_lev_3_scores[team]]
-    pick_two_dc_coral = [dc_lev_1_scores[team], dc_lev_2_scores[team], dc_lev_3_scores[team]]
-    
-    grid = [0, 0, 0]
-    overflow = 0
-    for j in range(3):
-        i = 2 - j
-        grid[i] += captain_a_coral[i] + pick_one_a_coral[i] + pick_two_a_coral[i]
-        alliance_score += (grid[i] * 1)
-        
-        grid[i] += captain_dc_coral[i] + pick_one_dc_coral[i] + pick_two_dc_coral[i] + overflow if i > 0 else 0
-        if grid[i] > 9:
-            overflow = grid[i] - 9
-            grid[i] = 9
-        alliance_score += (grid[i] * (2 + i))
-        
-        
-    alliance_score += objective
     
     compiled_score.append({
         "Team": team,
-        "Pick Two Score": alliance_score,
-        "Total Score": a_coral_score + dc_coral_score + objective
+        "Pick Two Score": full_alliance_score,
+        "Pick One Score": pick_one_score
     })
 
-opr.print_results(compiled_score, "Pick Two Score", 70, 1, True)
+opr.print_results(compiled_score, "Pick One Score", 70, 1, True)
